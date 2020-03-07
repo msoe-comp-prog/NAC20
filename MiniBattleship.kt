@@ -1,73 +1,87 @@
-package nac20
+package kattis.nac20
 
 fun main() {
-    val (size, numShips) = readLine()!!.split(" ").map(String::toInt)
+    val (size, numships) = readLine()!!.split(" ").map(String::toInt)
 
-    val map = Array(size) { readLine()!!.toCharArray() }
-
-    val ships = ArrayList<Int>()
-    repeat(numShips) {
-        ships += readLine()!!.toInt()
+    val map = Array(size) {
+        readLine()!!.toCharArray()
     }
 
-    println(r(ships, map))
+    val ships = ArrayList<Int>()
+    repeat(numships) {
+        ships += readLine()!!.toInt()
+    }
+    print(r(ships, map))
 }
 
-fun r(ships: List<Int>, map: Array<CharArray>) : Int {
+fun r(ships: List<Int>, map: Array<CharArray>): Int {
     if (ships.isEmpty()) {
-        return if (map.none { it.any { chr -> chr == 'O' } }) {
-            1
-        } else {
-            0
-        }
+        return if (map.none { it.any { char -> char == 'O' } }) 1 else 0
     } else {
-        val check = ships.first()
-        val pass = ships.drop(1)
-
-        var ret = 0
-
-        for (x in map.indices) {
-            for (y in map.indices) {
-                var good = true
-                for (c in x until x + check) {
-                    if (c < map.size) {
-                        good = good and (map[c][y] == 'O' || map[c][y] == '.')
-                    } else {
-                        good = false
-                    }
-                }
-                if (good) {
-                    for (c in x until x + check) {
-                        map[c][y] = if (map[c][y] == 'O') 'o' else 'T'
-                    }
-                    ret += r(pass, map)
-                    for (c in x until x + check) {
-                        map[c][y] = if (map[c][y] == 'o') 'O' else '.'
-                    }
-                }
-
-                if (check != 1) {
-                    good = true
-                    for (c in y until y + check) {
-                        if (c < map.size) {
-                            good = good and (map[x][c] == 'O' || map[x][c] == '.')
-                        } else {
-                            good = false
+        val check = ships.first();
+        val pass = ships.drop(1);
+        var sum = 0;
+        for (row in map.indices) {
+            for (col in map[row].indices) {
+                if (check + row <= map.size) {
+                    var valid = true
+                    for (x in 0 until check) {
+                        if (map[row + x][col] != '.' && map[row + x][col] != 'O') {
+                            valid = false;
+                            break
                         }
                     }
-                    if (good) {
-                        for (c in y until y + check) {
-                            map[x][c] = if (map[x][c] == 'O') 'o' else 'T'
+                    if (valid) {
+                        for (x in 0 until check) {
+                            if (map[row + x][col] == '.') {
+                                map[row + x][col] = 'T';
+                            } else if (map[row + x][col] == 'O') {
+                                map[row + x][col] = 'o';
+                            }
                         }
-                        ret += r(pass, map)
-                        for (c in y until y + check) {
-                            map[x][c] = if (map[x][c] == 'o') 'O' else '.'
+
+                        sum += r(pass, map);
+
+                        for (x in 0 until check) {
+                            if (map[row + x][col] == 'T') {
+                                map[row + x][col] = '.';
+                            } else if (map[row + x][col] == 'o') {
+                                map[row + x][col] = 'O';
+                            }
+                        }
+                    }
+
+                }
+                if (check > 1) {
+                    if (check + col <= map.size) {
+                        var valid = true
+                        for (x in 0 until check) {
+                            if (map[row][col + x] != '.' && map[row][col + x] != 'O') {
+                                valid = false;
+                                break
+                            }
+                        }
+                        if (valid) {
+                            for (x in 0 until check) {
+                                if (map[row][col + x] == '.') {
+                                    map[row][col + x] = 'T';
+                                } else if (map[row][col + x] == 'O') {
+                                    map[row][col + x] = 'o';
+                                }
+                            }
+                            sum += r(pass, map);
+                            for (x in 0 until check) {
+                                if (map[row][col + x] == 'T') {
+                                    map[row][col + x] = '.';
+                                } else if (map[row][col + x] == 'o') {
+                                    map[row][col + x] = 'O';
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
-        return ret
+        return sum;
     }
 }
